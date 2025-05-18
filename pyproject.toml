@@ -1,0 +1,19 @@
+[project]
+name = "video-preflight"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Matthew Plough", email = "matt.plough@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.2.0",
+]
+
+[project.scripts]
+video-preflight = "video_preflight:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
