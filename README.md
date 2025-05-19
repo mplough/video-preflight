@@ -24,6 +24,11 @@ Ensure that the tool is on the `PATH`:
 uv tool update-shell
 ```
 
+## Update
+
+```bash
+uv tool upgrade video-preflight
+```
 
 ### notes
 
