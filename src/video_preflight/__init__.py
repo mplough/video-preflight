@@ -125,19 +125,41 @@ def click_copy_tags(ctx: click.Context, source_file: Path, destination_file: Pat
     click.echo("Done copying tags.")
 
 
+@cli.command("rotate-clockwise", context_settings={"show_default": True})
+@click.pass_context
+@click.argument("file", type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path))
+@click.option("--angle", type=click.Choice([0, 90, 180, 270]), default=0, help="Rotate video")
+def click_rotate_clockwise(ctx: click.Context, file: Path, angle: int):
+    """Rotate a video clockwise.
+
+    Does so by writing a rotation tag.
+
+    Apple Photos doesn't recognize EXIF or XMP metadata.
+    """
+    if angle == 0:
+        click.echo("Skipping rotation because it's 0.")
+        return
+
+    click.echo("Rotating video ...")
+
+    # TODO should we add to the original rotation or overwrite the rotation?
+    args = ["-overwrite_original", f"-Rotation={angle}", f"{file}"]
+    run_exiftool(*args)
+
+    click.echo("Done rotation.")
+
+
 @cli.command("compress", context_settings={"show_default": True})
 @click.pass_context
 @click.argument("source_file", type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path))
 @click.argument("destination_file", type=click.Path(exists=False, path_type=Path))
 @click.option("--quality", type=float, default=22, help="x265 quality factor")
-@click.option("--rotate-clockwise", type=click.Choice([0, 90, 180, 270]), default=0, help="Rotate video")
 @click.option("--remove-audio", is_flag=True, default=False, help="Remove audio track from output")
 def click_compress(
     ctx: click.Context,
     source_file: Path,
     destination_file: Path,
     quality: float,
-    rotate_clockwise: int,
     remove_audio: bool,
 ):
     """Compress video using my custom preset.
@@ -170,7 +192,6 @@ def click_compress(
         + [
             "--quality",
             str(quality),
-            f"--rotate=angle={rotate_clockwise}:hflip=0",
         ]
         + (["--audio", "none"] if remove_audio else [])
         + output_args
@@ -247,8 +268,13 @@ def click_run(
         source_file=source_file,
         destination_file=destination_file,
         quality=quality,
-        rotate_clockwise=rotate_clockwise,
         remove_audio=remove_audio,
+    )
+
+    ctx.invoke(
+        click_rotate_clockwise,
+        file=destination_file,
+        angle=rotate_clockwise,
     )
 
     if copy_tags:
